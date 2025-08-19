@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Clock, Truck, ChefHat } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import kenyanCuisine from "@/assets/kenyan-cuisine.jpg";
 
 const featuredDishes = [
@@ -37,6 +38,32 @@ const featuredDishes = [
 ];
 
 const DiningPreview = () => {
+  const { toast } = useToast();
+
+  const handleAddToOrder = (dishName: string, price: string) => {
+    toast({
+      title: "Added to Order",
+      description: `${dishName} (${price}) added to your cart`,
+    });
+    // TODO: Add to cart state management
+  };
+
+  const handleReserveTable = () => {
+    toast({
+      title: "Table Reservation",
+      description: "Redirecting to table reservation system",
+    });
+    // TODO: Navigate to reservation page
+  };
+
+  const handleOrderOnline = () => {
+    toast({
+      title: "Online Ordering",
+      description: "Redirecting to full menu and cart",
+    });
+    // TODO: Navigate to full menu page
+  };
+
   return (
     <section id="dining" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -99,7 +126,10 @@ const DiningPreview = () => {
                   </div>
                 </div>
                 
-                <Button className="w-full btn-luxury">
+                <Button 
+                  className="w-full btn-luxury"
+                  onClick={() => handleAddToOrder(dish.name, dish.price.kes)}
+                >
                   Add to Order
                 </Button>
               </CardContent>
@@ -118,7 +148,11 @@ const DiningPreview = () => {
               Enjoy our elegant restaurant atmosphere with live traditional music 
               and impeccable service from our expert staff.
             </p>
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+            <Button 
+              variant="outline" 
+              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={handleReserveTable}
+            >
               Reserve Table
             </Button>
           </Card>
@@ -132,7 +166,11 @@ const DiningPreview = () => {
               Enjoy our delicious meals at home with our reliable delivery service 
               or convenient pickup options available daily.
             </p>
-            <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+            <Button 
+              variant="outline" 
+              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              onClick={handleOrderOnline}
+            >
               Order Online
             </Button>
           </Card>
@@ -140,7 +178,11 @@ const DiningPreview = () => {
 
         {/* View Full Menu */}
         <div className="text-center">
-          <Button size="lg" className="btn-luxury text-lg px-8 py-6">
+          <Button 
+            size="lg" 
+            className="btn-luxury text-lg px-8 py-6"
+            onClick={handleOrderOnline}
+          >
             View Full Menu & Order Online
           </Button>
         </div>

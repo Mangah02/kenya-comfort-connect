@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Wifi, Car, Coffee, Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import deluxeRoom from "@/assets/deluxe-room.jpg";
 
 const rooms = [
@@ -37,6 +38,16 @@ const rooms = [
 ];
 
 const RoomsPreview = () => {
+  const { toast } = useToast();
+
+  const handleBookRoom = (roomName: string, price: string) => {
+    toast({
+      title: "Booking Started",
+      description: `Redirecting to booking page for ${roomName} at ${price}`,
+    });
+    // TODO: Navigate to booking page with room details
+  };
+
   return (
     <section id="rooms" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -98,7 +109,10 @@ const RoomsPreview = () => {
                   ))}
                 </div>
                 
-                <Button className="w-full btn-luxury">
+                <Button 
+                  className="w-full btn-luxury"
+                  onClick={() => handleBookRoom(room.name, room.price.kes)}
+                >
                   Book This Room
                 </Button>
               </CardContent>
