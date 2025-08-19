@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				hotel: {
+					gold: 'hsl(var(--hotel-gold))',
+					'gold-light': 'hsl(var(--hotel-gold-light))',
+					navy: 'hsl(var(--hotel-navy))',
+					cream: 'hsl(var(--hotel-cream))',
+					warm: 'hsl(var(--hotel-warm))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
