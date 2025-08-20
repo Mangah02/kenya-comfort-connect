@@ -78,6 +78,7 @@ export type Database = {
           special_instructions: string | null
           total_amount: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -95,6 +96,7 @@ export type Database = {
           special_instructions?: string | null
           total_amount: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -112,6 +114,7 @@ export type Database = {
           special_instructions?: string | null
           total_amount?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -120,7 +123,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_order_by_id: {
+        Args: { order_uuid: string }
+        Returns: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          payment_status: string
+          total_amount: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
