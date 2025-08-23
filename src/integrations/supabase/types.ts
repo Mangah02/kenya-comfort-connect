@@ -72,6 +72,7 @@ export type Database = {
           delivery_fee: number | null
           delivery_type: string | null
           id: string
+          order_token: string | null
           order_type: string
           payment_method: string
           payment_status: string
@@ -90,6 +91,7 @@ export type Database = {
           delivery_fee?: number | null
           delivery_type?: string | null
           id?: string
+          order_token?: string | null
           order_type: string
           payment_method: string
           payment_status?: string
@@ -108,6 +110,7 @@ export type Database = {
           delivery_fee?: number | null
           delivery_type?: string | null
           id?: string
+          order_token?: string | null
           order_type?: string
           payment_method?: string
           payment_status?: string
@@ -123,6 +126,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_order_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_order_by_id: {
         Args: { order_uuid: string }
         Returns: {
@@ -131,6 +138,19 @@ export type Database = {
           customer_name: string
           customer_phone: string
           id: string
+          payment_status: string
+          total_amount: number
+        }[]
+      }
+      get_order_by_token: {
+        Args: { token: string }
+        Returns: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          order_token: string
           payment_status: string
           total_amount: number
         }[]
