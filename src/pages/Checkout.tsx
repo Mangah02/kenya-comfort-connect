@@ -126,6 +126,18 @@ const Checkout = () => {
     setLoading(true);
 
     try {
+      // Generate order token for guest orders
+      let orderToken = null;
+      if (!user) {
+        const { data: tokenData, error: tokenError } = await supabase
+          .rpc('generate_order_token');
+        
+        if (tokenError) {
+          throw tokenError;
+        }
+        orderToken = tokenData;
+      }
+
       // Create order in database
       const orderData = {
         customer_name: customerName,
@@ -140,7 +152,8 @@ const Checkout = () => {
         delivery_fee: deliveryType === "delivery" ? 500 : 0,
         special_instructions: specialInstructions || null,
         order_type: "hotel_booking",
-        user_id: user?.id || null
+        user_id: user?.id || null,
+        order_token: orderToken
       };
 
       const { data: order, error: orderError } = await supabase
@@ -187,7 +200,13 @@ const Checkout = () => {
         setTimeout(() => {
           // Clear cart and navigate to success page
           localStorage.removeItem('cart');
-          navigate(`/payment-success?order_id=${order.id}`);
+          
+          // Navigate with order ID and token (for guest orders)
+          const successUrl = orderToken 
+            ? `/payment-success?orderId=${order.id}&token=${orderToken}`
+            : `/payment-success?orderId=${order.id}`;
+          
+          navigate(successUrl);
         }, 3000);
         
       } else if (paymentMethod === "paypal") {
@@ -200,7 +219,13 @@ const Checkout = () => {
         // In a real implementation, you would redirect to PayPal
         setTimeout(() => {
           localStorage.removeItem('cart');
-          navigate(`/payment-success?order_id=${order.id}`);
+          
+          // Navigate with order ID and token (for guest orders)
+          const successUrl = orderToken 
+            ? `/payment-success?orderId=${order.id}&token=${orderToken}`
+            : `/payment-success?orderId=${order.id}`;
+          
+          navigate(successUrl);
         }, 2000);
       }
 

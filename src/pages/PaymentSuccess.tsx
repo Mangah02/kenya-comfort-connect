@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Home, Receipt } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,7 +22,8 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const orderId = searchParams.get('order_id');
+  const { toast } = useToast();
+  const orderId = searchParams.get('orderId');
 
   useEffect(() => {
     if (orderId) {
@@ -33,15 +35,41 @@ const PaymentSuccess = () => {
 
   const fetchOrder = async () => {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .single();
+      const token = searchParams.get('token');
 
-      if (error) {
-        console.error('Error fetching order:', error);
+      let data, error;
+
+      if (token) {
+        // Guest order - use token-based access
+        const { data: orderData, error: orderError } = await supabase
+          .rpc('get_order_by_token', { token });
+        
+        if (orderError) {
+          throw orderError;
+        }
+        
+        if (orderData && orderData.length > 0) {
+          data = orderData[0];
+        } else {
+          throw new Error('Order not found');
+        }
       } else {
+        // Authenticated user - use regular query
+        const response = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        
+        data = response.data;
+        error = response.error;
+        
+        if (error) {
+          throw error;
+        }
+      }
+
+      if (data) {
         setOrder(data);
         // Update payment status to paid for demo
         await supabase
@@ -50,7 +78,12 @@ const PaymentSuccess = () => {
           .eq('id', orderId);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load order details",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
