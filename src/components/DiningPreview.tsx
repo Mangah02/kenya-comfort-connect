@@ -4,6 +4,39 @@ import { Star, Clock, Truck, ChefHat } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import kenyanCuisine from "@/assets/kenyan-cuisine.jpg";
 
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  type: 'room' | 'dining';
+  description?: string;
+  image?: string;
+}
+
+const addToCart = (item: CartItem) => {
+  const existingCart = localStorage.getItem('cart');
+  let cartItems: CartItem[] = [];
+  
+  if (existingCart) {
+    try {
+      cartItems = JSON.parse(existingCart);
+    } catch (error) {
+      console.error('Error parsing cart:', error);
+    }
+  }
+  
+  const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
+  
+  if (existingItemIndex >= 0) {
+    cartItems[existingItemIndex].quantity += 1;
+  } else {
+    cartItems.push(item);
+  }
+  
+  localStorage.setItem('cart', JSON.stringify(cartItems));
+};
+
 const featuredDishes = [
   {
     id: 1,
@@ -40,12 +73,25 @@ const featuredDishes = [
 const DiningPreview = () => {
   const { toast } = useToast();
 
-  const handleAddToOrder = (dishName: string, price: string) => {
+  const handleAddToOrder = (dish: any) => {
+    const priceNumber = parseInt(dish.price.kes.replace(/[^\d]/g, ''));
+    
+    const cartItem: CartItem = {
+      id: `dish-${dish.id}`,
+      name: dish.name,
+      price: priceNumber,
+      quantity: 1,
+      type: 'dining',
+      description: dish.description,
+      image: dish.image
+    };
+    
+    addToCart(cartItem);
+    
     toast({
       title: "Added to Order",
-      description: `${dishName} (${price}) added to your cart`,
+      description: `${dish.name} has been added to your cart`,
     });
-    // TODO: Add to cart state management
   };
 
   const handleReserveTable = () => {
@@ -128,7 +174,7 @@ const DiningPreview = () => {
                 
                 <Button 
                   className="w-full btn-luxury"
-                  onClick={() => handleAddToOrder(dish.name, dish.price.kes)}
+                  onClick={() => handleAddToOrder(dish)}
                 >
                   Add to Order
                 </Button>

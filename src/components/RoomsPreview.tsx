@@ -4,6 +4,39 @@ import { Users, Wifi, Car, Coffee, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import deluxeRoom from "@/assets/deluxe-room.jpg";
 
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  type: 'room' | 'dining';
+  description?: string;
+  image?: string;
+}
+
+const addToCart = (item: CartItem) => {
+  const existingCart = localStorage.getItem('cart');
+  let cartItems: CartItem[] = [];
+  
+  if (existingCart) {
+    try {
+      cartItems = JSON.parse(existingCart);
+    } catch (error) {
+      console.error('Error parsing cart:', error);
+    }
+  }
+  
+  const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
+  
+  if (existingItemIndex >= 0) {
+    cartItems[existingItemIndex].quantity += 1;
+  } else {
+    cartItems.push(item);
+  }
+  
+  localStorage.setItem('cart', JSON.stringify(cartItems));
+};
+
 const rooms = [
   {
     id: 1,
@@ -40,12 +73,25 @@ const rooms = [
 const RoomsPreview = () => {
   const { toast } = useToast();
 
-  const handleBookRoom = (roomName: string, price: string) => {
+  const handleBookRoom = (room: any) => {
+    const priceNumber = parseInt(room.price.kes.replace(/[^\d]/g, ''));
+    
+    const cartItem: CartItem = {
+      id: `room-${room.id}`,
+      name: room.name,
+      price: priceNumber,
+      quantity: 1,
+      type: 'room',
+      description: room.description,
+      image: room.image
+    };
+    
+    addToCart(cartItem);
+    
     toast({
-      title: "Booking Started",
-      description: `Redirecting to booking page for ${roomName} at ${price}`,
+      title: "Room Added to Cart",
+      description: `${room.name} has been added to your cart`,
     });
-    // TODO: Navigate to booking page with room details
   };
 
   return (
@@ -111,7 +157,7 @@ const RoomsPreview = () => {
                 
                 <Button 
                   className="w-full btn-luxury"
-                  onClick={() => handleBookRoom(room.name, room.price.kes)}
+                  onClick={() => handleBookRoom(room)}
                 >
                   Book This Room
                 </Button>

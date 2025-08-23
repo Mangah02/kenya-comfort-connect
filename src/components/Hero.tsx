@@ -39,10 +39,6 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button size="lg" className="btn-luxury text-lg px-8 py-6">
-              Book Your Stay
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
             <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
               Explore Menu
               <Utensils className="w-5 h-5 ml-2" />
