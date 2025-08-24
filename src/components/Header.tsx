@@ -42,12 +42,16 @@ const Header = () => {
 
     updateCartCount();
     
-    // Listen for cart updates
-    window.addEventListener('storage', updateCartCount);
+    // Listen for cart updates - both storage and custom events
+    const handleCartUpdate = () => updateCartCount();
+    
+    window.addEventListener('storage', handleCartUpdate);
+    window.addEventListener('cartUpdated', handleCartUpdate);
     
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('storage', handleCartUpdate);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
     };
   }, []);
 
