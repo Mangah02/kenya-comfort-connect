@@ -121,6 +121,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          delivery_fee: number | null
+          id: string
+          payment_method: string | null
+          payment_status: string | null
+          service_charge: number | null
+          subtotal: number | null
+          total: number | null
+          vat: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          delivery_fee?: number | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          service_charge?: number | null
+          subtotal?: number | null
+          total?: number | null
+          vat?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          delivery_fee?: number | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          service_charge?: number | null
+          subtotal?: number | null
+          total?: number | null
+          vat?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
