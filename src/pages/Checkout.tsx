@@ -189,25 +189,86 @@ const Checkout = () => {
         throw itemsError;
       }
 
+      // Create payment record
+      const paymentData = {
+        customer_id: user?.id || null,
+        subtotal: getTotalPrice(),
+        service_charge: Math.round(getTotalPrice() * 0.1),
+        vat: Math.round(getTotalPrice() * 0.16),
+        delivery_fee: deliveryType === "delivery" ? 500 : 0,
+        total: getFinalTotal() + (deliveryType === "delivery" ? 500 : 0),
+        payment_method: paymentMethod,
+        payment_status: "pending"
+      };
+
+      const { data: payment, error: paymentError } = await supabase
+        .from('payments')
+        .insert(paymentData)
+        .select()
+        .single();
+
+      if (paymentError) {
+        throw paymentError;
+      }
+
       if (paymentMethod === "mpesa") {
-        // For demo purposes, simulate M-Pesa payment
+        // Call M-Pesa edge function for STK push
+        const { data: mpesaResponse, error: mpesaError } = await supabase.functions.invoke('mpesa-payment', {
+          body: {
+            phone: customerPhone,
+            amount: getFinalTotal() + (deliveryType === "delivery" ? 500 : 0),
+            orderId: order.id,
+            paymentId: payment.id,
+            accountReference: `ORDER-${order.id.substring(0, 8)}`
+          }
+        });
+
+        if (mpesaError) {
+          console.error('M-Pesa error:', mpesaError);
+          toast({
+            title: "M-Pesa Error",
+            description: "Failed to initiate M-Pesa payment. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
           title: "M-Pesa Payment Initiated",
           description: `Please check your phone for M-Pesa prompt. Order ID: ${order.id}`,
         });
         
-        // In a real implementation, you would call your M-Pesa edge function here
-        setTimeout(() => {
-          // Clear cart and navigate to success page
-          localStorage.removeItem('cart');
-          
-          // Navigate with order ID and token (for guest orders)
-          const successUrl = orderToken 
-            ? `/payment-success?orderId=${order.id}&token=${orderToken}`
-            : `/payment-success?orderId=${order.id}`;
-          
-          navigate(successUrl);
+        // Poll for payment status
+        const pollPaymentStatus = setInterval(async () => {
+          const { data: updatedPayment } = await supabase
+            .from('payments')
+            .select('payment_status')
+            .eq('id', payment.id)
+            .single();
+
+          if (updatedPayment?.payment_status === 'paid') {
+            clearInterval(pollPaymentStatus);
+            localStorage.removeItem('cart');
+            
+            const successUrl = orderToken 
+              ? `/payment-success?orderId=${order.id}&token=${orderToken}`
+              : `/payment-success?orderId=${order.id}`;
+            
+            navigate(successUrl);
+          } else if (updatedPayment?.payment_status === 'failed') {
+            clearInterval(pollPaymentStatus);
+            toast({
+              title: "Payment Failed",
+              description: "M-Pesa payment was not completed. Please try again.",
+              variant: "destructive",
+            });
+          }
         }, 3000);
+
+        // Stop polling after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollPaymentStatus);
+        }, 300000);
         
       } else if (paymentMethod === "paypal") {
         // For demo purposes, simulate PayPal redirect
