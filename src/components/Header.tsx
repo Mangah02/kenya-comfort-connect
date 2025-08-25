@@ -21,6 +21,12 @@ const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
+        
+        // Clear cart when user logs out
+        if (event === 'SIGNED_OUT' || !session?.user) {
+          localStorage.removeItem('cart');
+          window.dispatchEvent(new CustomEvent('cartUpdated', { detail: [] }));
+        }
       }
     );
 
@@ -57,6 +63,10 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
+      // Clear cart before signing out
+      localStorage.removeItem('cart');
+      window.dispatchEvent(new CustomEvent('cartUpdated', { detail: [] }));
+      
       // Clean up auth state
       Object.keys(localStorage).forEach((key) => {
         if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
